@@ -14,7 +14,7 @@ export default function PurchaseHistoryPage() {
   const [userEmail] = useState(DemoEmail);
 
   return (
-    <div>
+    <div suppressHydrationWarning>
       <Header />
       <main>
         <PurchaseHistory userEmail={userEmail} />

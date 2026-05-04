@@ -14,6 +14,3 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 }
-
-// Note: middleware.js is deprecated in favor of proxy config in next.config.mjs for Next.js 15+. 
-// Clerk recommends migration if applicable: https://clerk.com/docs/references/nextjs/middleware-proxy

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Phone, User, CreditCard } from "lucide-react";
 
 const PurchaseHistory = ({ userEmail }) => {
   const [orders, setOrders] = useState([]);
@@ -48,8 +50,6 @@ const PurchaseHistory = ({ userEmail }) => {
     );
   }
 
-  const calculateTotal = (order) => order.price; // Single product per order based on schema
-
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-8 text-center">Purchase History</h1>
@@ -59,25 +59,58 @@ const PurchaseHistory = ({ userEmail }) => {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Image
-                  src={order.imageUrl}
-                  alt={order.title}
+                  src={order.imageUrl || '/image1.png'}
+                  alt={order.title || 'Product'}
                   width={80}
                   height={80}
                   className="object-cover rounded-lg"
                 />
                 <div>
-                  <CardTitle className="text-lg">{order.title}</CardTitle>
+                  <CardTitle className="text-lg">{order.title || 'Product'}</CardTitle>
                   <p className="text-sm text-gray-500">{order.category}</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
-              <p className="font-semibold text-lg">₹{calculateTotal(order)}</p>
-              {order.paymentId && (
-                <p className="text-sm text-green-600">Payment ID: {order.paymentId}</p>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-lg">₹{order.amount || order.price}</span>
+                {order.paymentId && (
+                  <Badge variant="outline" className="text-green-600 border-green-600">
+                    <CreditCard className="w-3 h-3 mr-1" />
+                    Paid
+                  </Badge>
+                )}
+              </div>
+
+              {order.name && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <User className="w-4 h-4" />
+                  <span>{order.name}</span>
+                </div>
               )}
-              <p className="text-sm text-gray-500">
-                Ordered on: {new Date(order.createdAt).toLocaleDateString()}
+
+              {order.phone && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Phone className="w-4 h-4" />
+                  <span>{order.phone}</span>
+                </div>
+              )}
+
+              {order.address && (
+                <div className="flex items-start gap-2 text-sm text-gray-600">
+                  <MapPin className="w-4 h-4 mt-0.5" />
+                  <span>{order.address}</span>
+                </div>
+              )}
+
+              {order.paymentId && (
+                <p className="text-xs text-green-600 font-mono bg-green-50 p-1.5 rounded">
+                  Payment ID: {order.paymentId}
+                </p>
+              )}
+
+              <p className="text-xs text-gray-400">
+                Ordered on: {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
               </p>
             </CardContent>
           </Card>
@@ -88,4 +121,3 @@ const PurchaseHistory = ({ userEmail }) => {
 };
 
 export default PurchaseHistory;
-

@@ -15,6 +15,13 @@
       "when": 1773643724132,
       "tag": "0001_soft_magus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775000000000,
+      "tag": "0002_add_order_fields",
+      "breakpoints": true
     }
   ]
 }

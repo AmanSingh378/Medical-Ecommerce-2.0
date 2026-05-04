@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import axios from "axios";
 import Image from "next/image";
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import React, { useEffect, useState } from "react"
 import {
     Accordion,
@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/accordion"
 import SimilarProduct from "./_components/SimilarProduct";
 import AddToCartBtn from "@/app/_components/AddToCartBtn";
+import { ArrowLeft } from "lucide-react";
 
 function ProductDetail() {
     const { productId } = useParams();
+    const router = useRouter();
     const [product, setProduct] = useState();
     useEffect(() => {
         GetProductDetail();
@@ -30,7 +32,9 @@ function ProductDetail() {
     }
     return product&& (
         <div className="mt-10 ">
-            <h2>BACK</h2>
+            <Button variant="outline" className="flex text-blue-400 items-center gap-2" onClick={() => router.back()}>
+                <ArrowLeft className="w-4 h-4" /> BACK
+            </Button>
 
             <div className="grid grid-cols-1 gap-10 mt-6 md:grid-cols-2">
                 <Card className="flex items-center justify-center max-h-96">
@@ -66,7 +70,7 @@ function ProductDetail() {
             </div>
             
             <div className="mt-10">
-                <SimilarProduct category={ProductDetail?.category}/>
+                <SimilarProduct category={product?.category} currentProductId={product?.id}/>
             </div>
         </div>
     )

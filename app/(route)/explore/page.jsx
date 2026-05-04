@@ -36,19 +36,30 @@ function Explore() {
         if(result?.data?.error)
         {
             toast(result?.data?.error)
+            return;
         }
+        
         if(offset_===0)
         {
             setProductsList(result.data);
         }
         else{
-        setProductsList(prev=>[...prev, ...result.data]);
+            // Deduplicate by product id before appending
+            setProductsList(prev=>{
+                const existingIds = new Set(prev.map(p => p.id));
+                const newProducts = (result.data || []).filter(p => !existingIds.has(p.id));
+                return [...prev, ...newProducts];
+            });
         }
+        
+        // Update offset state
+        setOffset(offset_);
     }
     
     useEffect(()=>{
         if(sort)
         {
+            setOffset(0);
             setProductsList([]);
             GetProductList(0);
         }
@@ -65,8 +76,8 @@ function Explore() {
                         onChange={(event)=>setSearchInput(event.target.value)}
                     />
                     <Button onClick={()=>{
+                        setOffset(0);
                         GetProductList(0);
-                        //setTimeout(() => {GetProductList(0, searchInput);}, 50);  // Then search
                         }}><Search/>Search</Button>
                 </div>
                 <SortProducts onSortChange={(value)=>setSort(value)}/>

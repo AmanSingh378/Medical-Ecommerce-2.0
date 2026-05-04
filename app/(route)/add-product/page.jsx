@@ -18,7 +18,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 function AddProduct() {
-    const categoryOptions = ['Medicine', 'Supplements', 'Equipment', 'Personal Care', 'Wellness', 'Other']
+    const categoryOptions = ["Pain Relief", "First Aid", "Vitamins & Supplements", "Skin Care", "Orthopedics", "Diabetic Care", "Baby Care", "Women's Health", "Dental Care",
+    "Eye Care", "Fitness & Nutrition", "Ayurvedic", "Sexual Wellness", "Diagnostics", "Hospital Supplies", "Heart Care", "Respiratory Care", "Cold & Flu", "Digestional",
+    "Neurological", "Allergy Relief", "Personal Hygiene", "Nutritionals", "Home Healthcare", "Immunity Boosters", "Incontinence Care", "Pain Management", "Diabetes Management"];
     const [formData, setFormData] = useState([]);
     const { user } = useUser();
     const [loading, setLoading] = useState(false);

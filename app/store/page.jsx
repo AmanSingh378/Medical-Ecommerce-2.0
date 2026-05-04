@@ -10,7 +10,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const categories = ['All', 'Medicine', 'Supplements', 'Equipment', 'Personal Care', 'Wellness', 'Other']
+const categories = ["All", "Pain Relief", "First Aid", "Vitamins & Supplements", "Skin Care", "Orthopedics", "Diabetic Care", "Baby Care", "Women's Health", "Dental Care",
+    "Eye Care", "Fitness & Nutrition", "Ayurvedic", "Sexual Wellness", "Diagnostics", "Hospital Supplies", "Heart Care", "Respiratory Care", "Cold & Flu", "Digestional",
+    "Neurological", "Allergy Relief", "Personal Hygiene", "Nutritionals", "Home Healthcare", "Immunity Boosters", "Incontinence Care", "Pain Management", "Diabetes Management"]
 
 export default function Store() {
   const [selectedCategory, setSelectedCategory] = useState('All')

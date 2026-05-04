@@ -21,6 +21,10 @@ function UserListing() {
         setListing(result.data);
         setLoading(false);
     }
+
+    const handleDelete = (productId) => {
+        setListing(prev => prev.filter(p => p.id !== productId));
+    }
     
     return (
         <div className="mt-5 ">
@@ -38,7 +42,8 @@ function UserListing() {
                 <div className="grid grid-cols-1 gap-4 mt-5 md:grid-cols-2 lg:grid-cols-3">
                     {listing.map((product,index)=>(
                         <ProductCardItem key={index} product={product}
-                            editable={true} 
+                            editable={true}
+                            onDelete={handleDelete}
                             />
                     ))}
                 </div>

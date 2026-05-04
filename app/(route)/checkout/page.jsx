@@ -4,6 +4,8 @@ import { CartContext } from "@/app/_context/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -16,16 +18,31 @@ function Checkout() {
     const [loading,setLoading]= useState(false);
     const router= useRouter();
     const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+    const [address, setAddress] = useState({
+        name: '',
+        phone: '',
+        addressLine: '',
+        city: '',
+        state: '',
+        pincode: ''
+    });
 
     const calculateTotal= ()=>{
         let total= 0;
         cart.forEach(item=>{
             total= total+ Number(item.price)
         })
-        return Math.round(total * 100); // Convert to paise for Razorpay (round to avoid decimals)
+        return Math.round(total * 100);
     }
 
-    // Check if Razorpay is loaded
+    const calculateTotalRupees = () => {
+        let total = 0;
+        cart.forEach(item => {
+            total = total + Number(item.price)
+        })
+        return total;
+    }
+
     useEffect(() => {
         const checkRazorpay = () => {
             if (window.Razorpay) {
@@ -38,24 +55,75 @@ function Checkout() {
         checkRazorpay();
     }, []);
 
-    const  onPaymentSuccess= async(paymentId, orderId)=>{
+    const validateAddress = () => {
+        if (!address.name.trim()) {
+            toast.error('Please enter your full name');
+            return false;
+        }
+        if (!address.phone.trim() || address.phone.length < 10) {
+            toast.error('Please enter a valid phone number');
+            return false;
+        }
+        if (!address.addressLine.trim()) {
+            toast.error('Please enter your address');
+            return false;
+        }
+        if (!address.city.trim()) {
+            toast.error('Please enter your city');
+            return false;
+        }
+        if (!address.state.trim()) {
+            toast.error('Please enter your state');
+            return false;
+        }
+        if (!address.pincode.trim() || address.pincode.length < 6) {
+            toast.error('Please enter a valid pincode');
+            return false;
+        }
+        return true;
+    };
+
+    const  onPaymentSuccess= async(paymentId, orderId, signature)=>{
         setLoading(true);
         try {
-            // Verify payment on server before creating order
             const verifyResponse = await axios.post('/api/verifyPayment', {
                 razorpay_payment_id: paymentId,
                 razorpay_order_id: orderId,
+                razorpay_signature: signature,
             });
 
             if (verifyResponse.data.verified) {
+                const fullAddress = `${address.addressLine}, ${address.city}, ${address.state} - ${address.pincode}`;
                 const result= await axios.post('/api/order',{
                     orderDetail: cart,
                     email:user?.primaryEmailAddress?.emailAddress,
-                    paymentId: paymentId
+                    paymentId: paymentId,
+                    amount: calculateTotalRupees(),
+                    name: address.name,
+                    phone: address.phone,
+                    address: fullAddress
                 });
 
                 if(result)
                 {
+                    // Send order confirmation email
+                    try {
+                        await axios.post('/api/send-email', {
+                            to: user?.primaryEmailAddress?.emailAddress,
+                            subject: 'Your MediCare Order Confirmation & Receipt',
+                            orderDetail: cart,
+                            paymentId: paymentId,
+                            totalAmount: calculateTotalRupees(),
+                            customerName: address.name,
+                            customerAddress: fullAddress,
+                            customerPhone: address.phone,
+                            orderDate: new Date().toISOString(),
+                        });
+                        toast.success('Order confirmation email sent!');
+                    } catch (emailErr) {
+                        console.error('Email sending failed:', emailErr);
+                    }
+
                     setCart([]);
                     toast.success('Order Created Successfully!!')
                     router.replace('/dashboard');
@@ -70,6 +138,10 @@ function Checkout() {
         setLoading(false);
     }
 
+    const handleAddressChange = (field, value) => {
+        setAddress(prev => ({ ...prev, [field]: value }));
+    };
+
     const initRazorpayPayment = async () => {
         if (!razorpayLoaded || !window.Razorpay) {
             toast.error("Payment system is not loaded. Please refresh the page.");
@@ -81,9 +153,12 @@ function Checkout() {
             return;
         }
 
+        if (!validateAddress()) {
+            return;
+        }
+
         setLoading(true);
         try {
-            // Create order on server
             const orderResponse = await axios.post('/api/createOrder', {
                 amount: calculateTotal()
             });
@@ -94,7 +169,6 @@ function Checkout() {
                 throw new Error("Failed to create order");
             }
 
-            // Initialize Razorpay payment
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                 name: "Medical E-Commerce",
@@ -103,12 +177,12 @@ function Checkout() {
                 order_id: order.id,
                 description: "Payment for your order",
                 handler: async function (response) {
-                    // Payment successful - verify and create order
                     console.log("Payment response:", response);
                     toast.success("Payment Successful!");
                     await onPaymentSuccess(
                         response.razorpay_payment_id,
-                        response.razorpay_order_id
+                        response.razorpay_order_id,
+                        response.razorpay_signature
                     );
                 },
                 prefill: {
@@ -117,22 +191,24 @@ function Checkout() {
                     contact: ""
                 },
                 theme: {
-                    color: "#0070ba" // PayPal blue color for consistency
+                    color: "#0070ba"
                 },
                 modal: {
                     ondismiss: function() {
                         toast.error("Payment cancelled!");
                         setLoading(false);
                     }
-                },
-                error: function(error) {
-                    console.error("Razorpay error:", error);
-                    toast.error("Payment failed. Please try again.");
-                    setLoading(false);
                 }
             };
 
             const paymentObject = new window.Razorpay(options);
+
+            paymentObject.on('payment.failed', function (response) {
+                console.error("Razorpay payment failed:", response.error);
+                toast.error(response.error.description || "Payment failed. Please try again.");
+                setLoading(false);
+            });
+
             paymentObject.open();
             
         } catch (error) {
@@ -170,6 +246,42 @@ function Checkout() {
 
                         {cart.length > 0 && (
                             <>
+                                <div className="mt-5 space-y-3">
+                                    <h3 className="font-bold text-lg">Shipping Address</h3>
+                                    <Input
+                                        placeholder="Full Name"
+                                        value={address.name}
+                                        onChange={(e) => handleAddressChange('name', e.target.value)}
+                                    />
+                                    <Input
+                                        placeholder="Phone Number"
+                                        type="tel"
+                                        value={address.phone}
+                                        onChange={(e) => handleAddressChange('phone', e.target.value)}
+                                    />
+                                    <Textarea
+                                        placeholder="Address Line"
+                                        value={address.addressLine}
+                                        onChange={(e) => handleAddressChange('addressLine', e.target.value)}
+                                    />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Input
+                                            placeholder="City"
+                                            value={address.city}
+                                            onChange={(e) => handleAddressChange('city', e.target.value)}
+                                        />
+                                        <Input
+                                            placeholder="State"
+                                            value={address.state}
+                                            onChange={(e) => handleAddressChange('state', e.target.value)}
+                                        />
+                                    </div>
+                                    <Input
+                                        placeholder="Pincode"
+                                        value={address.pincode}
+                                        onChange={(e) => handleAddressChange('pincode', e.target.value)}
+                                    />
+                                </div>
                                 <Button 
                                     onClick={initRazorpayPayment}
                                     disabled={loading || !razorpayLoaded}

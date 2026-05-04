@@ -1,3 +1,4 @@
+'use client';
 import { Button } from '@/components/ui/button'
 import { ShoppingBag } from 'lucide-react'
 import React, { useContext } from 'react'
@@ -6,6 +7,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { CartContext } from '../_context/CartContext'
 import CartList from './CartList'
+
 
 function Header() {
 
@@ -43,10 +45,10 @@ function Header() {
             <div className='flex items-center gap-5'>
 
                 <CartList>
-                    <div className='flex items-center'>
+                    <div className='flex items-center' suppressHydrationWarning>
                         <ShoppingBag />
                         <Badge className='text-white hover:bg-pink-400 rounded-full py-1'>
-                            {cart?.length}
+                            {cart?.length || 0}
                         </Badge>
                     </div>
                 </CartList>

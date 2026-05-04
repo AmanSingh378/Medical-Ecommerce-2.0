@@ -7,7 +7,7 @@ import { MoreVerticalIcon } from "lucide-react";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 
-function AddToCartBtn({editable, size='sm', product}) {
+function AddToCartBtn({editable, size='sm', product, onDelete}) {
     const { cart, setCart } = useContext(CartContext);
     const { user }= useUser();
     const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ function AddToCartBtn({editable, size='sm', product}) {
             {!editable ?
                 <Button size={size} className='mt-1 bg-blue-300 hover:bg-pink-300 w-full' disabled={loading} onClick={AddToCart}>
                     Add to Cart</Button>
-                : <ProductEditableOption>
+                : <ProductEditableOption product={product} onDelete={onDelete}>
                     <MoreVerticalIcon />
                 </ProductEditableOption>}
         </div>

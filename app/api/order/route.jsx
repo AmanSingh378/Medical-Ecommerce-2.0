@@ -10,7 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(req) {
     try {
         // Get Order Detail
-        const { orderDetail, email, paymentId } = await req.json();
+        const { orderDetail, email, paymentId, amount, name, phone, address } = await req.json();
         
         // Validate required fields
         if (!orderDetail || !email) {
@@ -37,8 +37,12 @@ export async function POST(req) {
         orderDetail.forEach((order) => {
             orderList.push({
                 email: email,
-                productId: order.productId,
+                productId: order.id,
                 paymentId: paymentId || null,
+                amount: amount || order.price || null,
+                name: name || null,
+                phone: phone || null,
+                address: address || null,
                 createdAt: new Date(),
             })
         });

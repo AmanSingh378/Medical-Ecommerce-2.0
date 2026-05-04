@@ -32,6 +32,12 @@ export const orderTable= pgTable('orders',{
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     email:varchar('email').notNull().references(() => usersTable.email),
     productId:integer().notNull().references(()=>productsTable.id),
+    paymentId: varchar('paymentId'),
+    amount: integer('amount'),
+    name: varchar('name', { length: 255 }),
+    phone: varchar('phone', { length: 50 }),
+    address: text('address'),
+    createdAt: timestamp('createdAt').defaultNow(),
 })
 
 export const queriesTable = pgTable("queries", {

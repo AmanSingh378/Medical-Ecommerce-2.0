@@ -19,7 +19,7 @@ function CheckoutProductItem({ product }) {
                         <RemoveFromCart product={product} />
                     </div>
                 </div>
-                <h2 className="font-bold text-lg">${product?.price}</h2>
+                <h2 className="font-bold text-lg">₹{product?.price}</h2>
 
             </Card>
         </div>

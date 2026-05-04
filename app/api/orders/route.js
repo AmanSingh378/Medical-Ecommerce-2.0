@@ -7,6 +7,33 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const email = searchParams.get("email");
+    const productId = searchParams.get("productId");
+
+    if (productId) {
+      const ordersWithProducts = await db
+        .select({
+          id: orderTable.id,
+          email: orderTable.email,
+          productId: orderTable.productId,
+          paymentId: orderTable.paymentId,
+          amount: orderTable.amount,
+          name: orderTable.name,
+          phone: orderTable.phone,
+          address: orderTable.address,
+          createdAt: orderTable.createdAt,
+          title: productsTable.title,
+          price: productsTable.price,
+          imageUrl: productsTable.imageUrl,
+          category: productsTable.category,
+        })
+        .from(orderTable)
+        .leftJoin(productsTable, eq(orderTable.productId, productsTable.id))
+        .where(eq(orderTable.productId, productId));
+
+      return NextResponse.json({
+        orders: ordersWithProducts,
+      });
+    }
 
     if (!email) {
       return NextResponse.json({ orders: [] });
@@ -19,6 +46,11 @@ export async function GET(req) {
         email: orderTable.email,
         productId: orderTable.productId,
         paymentId: orderTable.paymentId,
+        amount: orderTable.amount,
+        name: orderTable.name,
+        phone: orderTable.phone,
+        address: orderTable.address,
+        createdAt: orderTable.createdAt,
         title: productsTable.title,
         price: productsTable.price,
         imageUrl: productsTable.imageUrl,
@@ -36,4 +68,3 @@ export async function GET(req) {
     return NextResponse.json({ orders: [] });
   }
 }
-

@@ -4,6 +4,7 @@ import { Funnel_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "./provider";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
           <Provider>
             {children}
           </Provider>
+          <Analytics />
           <Toaster />
         </body>
       </html>

@@ -14,18 +14,10 @@ import {
     Text,
 } from '@react-email/components';
 import * as React from 'react';
-import { orderTable } from '@/configs/schema';
 
-
-export const EmailOrder = ({ orderDetail }) => {
-    const {
-        orderId = 'ORD-2024-001',
-        date = new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        })
-    } = orderDetail || {};
+export const EmailOrder = ({ orderDetail, paymentId, totalAmount, customerName, customerAddress, customerPhone, orderDate }) => {
+    const safeOrderDetail = Array.isArray(orderDetail) ? orderDetail : [];
+    const safeTotal = totalAmount || safeOrderDetail.reduce((sum, item) => sum + (Number(item?.price) || 0), 0);
 
     return (
         <Html>
@@ -35,7 +27,7 @@ export const EmailOrder = ({ orderDetail }) => {
                     .font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
                 `}</style>
             </Head>
-            <Preview>MediCare Order Confirmation - {orderId}</Preview>
+            <Preview>MediCare Order Confirmation - Payment Successful</Preview>
             <Body className="font-inter bg-gray-100" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif', backgroundColor: '#f3f4f6', margin: 0, padding: '20px' }}>
                 <Container style={{ maxWidth: '640px', margin: '0 auto' }}>
 
@@ -44,11 +36,11 @@ export const EmailOrder = ({ orderDetail }) => {
                         <Row>
                             <Column style={{ verticalAlign: 'middle', width: '56px' }}>
                                 <Img
-                                    src= "https://pngtree.com/so/medicare-icon"
+                                    src="https://cdn-icons-png.flaticon.com/512/4320/4320337.png"
                                     width="48"
                                     height="48"
                                     alt="MediCare Logo"
-                                    style={{ borderRadius: '8px', display: 'block' }}
+                                    style={{ borderRadius: '8px', display: 'block', backgroundColor: '#fff' }}
                                 />
                             </Column>
                             <Column style={{ verticalAlign: 'middle', paddingLeft: '16px' }}>
@@ -67,6 +59,13 @@ export const EmailOrder = ({ orderDetail }) => {
                         </Row>
                     </Section>
 
+                    {/* Payment Success Banner */}
+                    <Section style={{ backgroundColor: '#dcfce7', borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', padding: '16px 24px', textAlign: 'center' }}>
+                        <Text style={{ color: '#166534', fontSize: '16px', fontWeight: '600', margin: 0 }}>
+                            ✅ Payment Successful
+                        </Text>
+                    </Section>
+
                     {/* Main Content Card */}
                     <Section style={{ backgroundColor: '#ffffff', padding: '24px', borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderRadius: '0 0 12px 12px' }}>
 
@@ -74,44 +73,61 @@ export const EmailOrder = ({ orderDetail }) => {
                         <Row style={{ marginBottom: '24px' }}>
                             <Column style={{ verticalAlign: 'top', width: '50%' }}>
                                 <Text style={{ color: '#6b7280', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 4px 0' }}>
-                                    Order Number
+                                    Order Date
                                 </Text>
-                                <Text style={{ color: '#111827', fontSize: '18px', fontWeight: '600', margin: 0 }}>
-                                    {orderId}
+                                <Text style={{ color: '#111827', fontSize: '16px', fontWeight: '600', margin: 0 }}>
+                                    {orderDate || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                                 </Text>
                             </Column>
                             <Column align="right" style={{ verticalAlign: 'top', width: '50%' }}>
                                 <Text style={{ color: '#6b7280', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 4px 0' }}>
-                                    Date
+                                    Payment ID
                                 </Text>
-                                <Text style={{ color: '#111827', fontSize: '18px', fontWeight: '600', margin: 0 }}>
-                                    {date}
+                                <Text style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: 0, fontFamily: 'monospace' }}>
+                                    {paymentId || 'N/A'}
                                 </Text>
                             </Column>
                         </Row>
 
                         <Hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '20px 0' }} />
 
-                        {/* Shipping Address */}
-                        <Row style={{ marginBottom: '24px' }}>
-                            
-                        </Row>
+                        {/* Customer Details */}
+                        <Section style={{ marginBottom: '24px', backgroundColor: '#f9fafb', borderRadius: '8px', padding: '16px' }}>
+                            <Heading style={{ color: '#374151', fontSize: '14px', fontWeight: '600', margin: '0 0 12px 0' }}>
+                                Shipping Details
+                            </Heading>
+                            {customerName && (
+                                <Text style={{ color: '#4b5563', fontSize: '14px', margin: '4px 0' }}>
+                                    <strong>Name:</strong> {customerName}
+                                </Text>
+                            )}
+                            {customerPhone && (
+                                <Text style={{ color: '#4b5563', fontSize: '14px', margin: '4px 0' }}>
+                                    <strong>Phone:</strong> {customerPhone}
+                                </Text>
+                            )}
+                            {customerAddress && (
+                                <Text style={{ color: '#4b5563', fontSize: '14px', margin: '4px 0' }}>
+                                    <strong>Address:</strong> {customerAddress}
+                                </Text>
+                            )}
+                        </Section>
 
                         <Hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '20px 0' }} />
 
                         {/* Order Items Header */}
                         <Row style={{ marginBottom: '12px' }}>
-                            <Column style={{ width: '50%' }}>
+                            <Column style={{ width: '55%' }}>
                                 <Text style={{ color: '#6b7280', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
                                     Item
                                 </Text>
                             </Column>
-                            <Column align="center" style={{ width: '15%' }}>
+                            <Column align="center" style={{ width: '20%' }}>
                                 <Text style={{ color: '#6b7280', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
-                                    Qty
+                                    Category
                                 </Text>
                             </Column>
-                            <Column align="right" style={{ width: '35%' }}>
+                            <Column align="right" style={{ width: '25%' }}>
                                 <Text style={{ color: '#6b7280', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
                                     Price
                                 </Text>
@@ -119,32 +135,66 @@ export const EmailOrder = ({ orderDetail }) => {
                         </Row>
 
                         {/* Order Items */}
-                        {orderDetail&&orderDetail.map((order, index) => (
-                            <Row key={index} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: index < orderDetail.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                                <Column style={{ verticalAlign: 'middle', width: '50%' }}>
+                        {safeOrderDetail.map((order, index) => (
+                            <Row key={index} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: index < safeOrderDetail.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+                                <Column style={{ verticalAlign: 'middle', width: '55%' }}>
                                     <Row>
-                                        <Column style={{ width: '56px', verticalAlign: 'middle' }}>
+                                        <Column style={{ width: '48px', verticalAlign: 'middle' }}>
                                             <Img
-                                                src={order?.imageUrl}
-                                                width="56"
-                                                height="56"
-                                                alt={order.name}
-                                                style={{ borderRadius: '8px', display: 'block' }}
+                                                src={order?.imageUrl || 'https://cdn-icons-png.flaticon.com/512/4320/4320337.png'}
+                                                width="48"
+                                                height="48"
+                                                alt={order?.title || 'Product'}
+                                                style={{ borderRadius: '6px', display: 'block' }}
                                             />
                                         </Column>
-                                        <Column style={{ verticalAlign: 'middle', paddingLeft: '12px' }}>
-                                            <Text >{order?.title}</Text>
+                                        <Column style={{ verticalAlign: 'middle', paddingLeft: '10px' }}>
+                                            <Text style={{ color: '#111827', fontSize: '14px', fontWeight: '500', margin: 0 }}>
+                                                {order?.title || 'Product'}
+                                            </Text>
                                         </Column>
                                     </Row>
                                 </Column>
-                                <Column align="center" style={{ verticalAlign: 'middle', width: '15%' }}>
-                                    <Text style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>{order?.category}</Text>
+                                <Column align="center" style={{ verticalAlign: 'middle', width: '20%' }}>
+                                    <Text style={{ color: '#6b7280', fontSize: '13px', margin: 0 }}>{order?.category || '-'}</Text>
                                 </Column>
-                                
+                                <Column align="right" style={{ verticalAlign: 'middle', width: '25%' }}>
+                                    <Text style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: 0 }}>
+                                        ₹{order?.price || 0}
+                                    </Text>
+                                </Column>
                             </Row>
                         ))}
+
+                        <Hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '20px 0' }} />
+
                         {/* Order Summary */}
-                        
+                        <Section>
+                            <Row style={{ marginBottom: '8px' }}>
+                                <Column style={{ width: '70%' }}>
+                                    <Text style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Subtotal</Text>
+                                </Column>
+                                <Column align="right" style={{ width: '30%' }}>
+                                    <Text style={{ color: '#111827', fontSize: '14px', margin: 0 }}>₹{safeTotal}</Text>
+                                </Column>
+                            </Row>
+                            <Row style={{ marginBottom: '8px' }}>
+                                <Column style={{ width: '70%' }}>
+                                    <Text style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Shipping</Text>
+                                </Column>
+                                <Column align="right" style={{ width: '30%' }}>
+                                    <Text style={{ color: '#22c55e', fontSize: '14px', margin: 0 }}>Free</Text>
+                                </Column>
+                            </Row>
+                            <Row style={{ marginTop: '12px', paddingTop: '12px', borderTop: '2px solid #e5e7eb' }}>
+                                <Column style={{ width: '70%' }}>
+                                    <Text style={{ color: '#111827', fontSize: '18px', fontWeight: '700', margin: 0 }}>Total Paid</Text>
+                                </Column>
+                                <Column align="right" style={{ width: '30%' }}>
+                                    <Text style={{ color: '#1e40af', fontSize: '20px', fontWeight: '700', margin: 0 }}>₹{safeTotal}</Text>
+                                </Column>
+                            </Row>
+                        </Section>
 
                     </Section>
 
@@ -188,4 +238,3 @@ export const EmailOrder = ({ orderDetail }) => {
 };
 
 export default EmailOrder;
-
